@@ -3,155 +3,169 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>التقديم – البطولة</title>
+<title>PMGC – التقديم</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  font-family: "Cairo", sans-serif;
-}
+*{box-sizing:border-box;font-family:Cairo,sans-serif}
 body{
-  margin:0;
-  min-height:100vh;
-  background:
-    linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.75)),
-    url("https://images.unsplash.com/photo-1604079628040-94301bb21b91");
-  background-size:cover;
-  background-position:center;
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+margin:0;min-height:100vh;
+background:linear-gradient(rgba(0,0,0,.8),rgba(0,0,0,.8)),
+url("https://images.unsplash.com/photo-1604079628040-94301bb21b91");
+background-size:cover;
+color:#fff;display:flex;justify-content:center;align-items:center
 }
 .container{
-  width:95%;
-  max-width:420px;
-  background:rgba(0,0,0,.65);
-  backdrop-filter:blur(8px);
-  border-radius:18px;
-  padding:20px;
-  box-shadow:0 0 40px rgba(0,255,255,.15);
+width:95%;max-width:420px;
+background:rgba(0,0,0,.65);
+backdrop-filter:blur(10px);
+padding:20px;border-radius:20px;
+box-shadow:0 0 50px rgba(0,255,255,.2)
 }
-h1{
-  text-align:center;
-  margin:0 0 10px;
+h1{text-align:center;margin-bottom:10px}
+.timer{text-align:center;color:#00ffff;margin-bottom:15px;font-size:18px}
+input,button{
+width:100%;padding:12px;margin-bottom:10px;
+border:none;border-radius:12px;font-size:15px
 }
-.timer{
-  text-align:center;
-  font-size:20px;
-  margin-bottom:15px;
-  color:#00ffff;
-}
-input{
-  width:100%;
-  padding:12px;
-  margin-bottom:10px;
-  border:none;
-  border-radius:10px;
-  background:#111;
-  color:#fff;
-  font-size:15px;
-}
-input:focus{
-  outline:2px solid #00ffff;
-}
+input{background:#111;color:#fff}
 button{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(45deg,#00ffff,#0077ff);
-  color:#000;
-  font-size:17px;
-  font-weight:bold;
-  cursor:pointer;
+background:linear-gradient(45deg,#00ffff,#0077ff);
+color:#000;font-weight:bold;cursor:pointer
 }
-button:hover{
-  opacity:.9;
+button:disabled{background:#555;color:#999}
+.success{color:#0f0;text-align:center}
+.admin-btn{
+background:#ffb300;color:#000;margin-top:10px
 }
-.success{
-  text-align:center;
-  margin-top:10px;
-  color:#0f0;
+.panel{
+display:none;background:#111;padding:15px;border-radius:15px;margin-top:15px
 }
-footer{
-  margin-top:15px;
-  text-align:center;
-  font-size:13px;
-  opacity:.8;
-}
+.panel h3{text-align:center}
+.footer{text-align:center;font-size:13px;opacity:.8}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h1>التقديم للبطولة</h1>
-  <div class="timer" id="timer">جارٍ التحميل...</div>
+<h1>التقديم لبطولة PMGC</h1>
+<div class="timer" id="timer"></div>
 
-  <input id="name" placeholder="الاسم الكامل">
-  <input id="playerId" placeholder="ID اللاعب">
-  <input id="rank" placeholder="التير / الرانك">
-  <input id="ping" placeholder="البنج (Ping)">
-  
-  <button onclick="submitForm()">تقديم</button>
+<input id="name" placeholder="الاسم الكامل">
+<input id="pid" placeholder="ID اللاعب">
+<input id="rank" placeholder="التير / الرانك">
+<input id="ping" placeholder="البنج">
 
-  <div class="success" id="msg"></div>
+<button id="submitBtn" onclick="submitForm()">تقديم</button>
+<div class="success" id="msg"></div>
 
-  <footer>
-    للتواصل: 2001270382949  
-    <br>
-    الرومات 2 – 3 – 4 (قيد التحديث)
-  </footer>
+<button class="admin-btn" onclick="openAdmin()">لوحة التحكم</button>
+
+<div class="panel" id="adminPanel">
+<h3>لوحة التحكم</h3>
+<p>عدد المتقدمين: <span id="count">0</span></p>
+<button onclick="closeApply()">قفل التقديم</button>
+<button onclick="openApply()">فتح التقديم</button>
+</div>
+
+<div class="footer">
+📞 2001270382949<br>
+الرومات 2 – 3 – 4 (جارٍ التحديث)
+</div>
 </div>
 
 <script>
-// ====== نظام الوقت الثابت 24 ساعة ======
-const TOTAL_TIME = 24 * 60 * 60 * 1000; // 24 ساعة بالمللي
+// ===== الإعدادات =====
+const PASSWORD = "PMGC2026";
+const TOTAL_TIME = 24*60*60*1000;
 
+// ===== الوقت =====
 let startTime = localStorage.getItem("startTime");
-
 if(!startTime){
   startTime = Date.now();
-  localStorage.setItem("startTime", startTime);
-}else{
-  startTime = parseInt(startTime);
+  localStorage.setItem("startTime",startTime);
+}else startTime = parseInt(startTime);
+
+// ===== حالة التقديم =====
+if(localStorage.getItem("applyStatus")==null){
+  localStorage.setItem("applyStatus","open");
 }
 
 function updateTimer(){
   const now = Date.now();
-  const elapsed = now - startTime;
-  const remaining = TOTAL_TIME - elapsed;
+  const remain = TOTAL_TIME - (now-startTime);
 
-  if(remaining <= 0){
-    document.getElementById("timer").innerText = "❌ انتهى وقت التقديم";
+  if(remain<=0){
+    document.getElementById("timer").innerText="❌ انتهى وقت التقديم";
+    localStorage.setItem("applyStatus","closed");
+    document.getElementById("submitBtn").disabled=true;
     return;
   }
 
-  const h = Math.floor(remaining / (1000*60*60));
-  const m = Math.floor((remaining % (1000*60*60)) / (1000*60));
-  const s = Math.floor((remaining % (1000*60)) / 1000);
-
-  document.getElementById("timer").innerText =
-    `⏳ الوقت المتبقي: ${h} ساعة ${m} دقيقة ${s} ثانية`;
+  const h=Math.floor(remain/3600000);
+  const m=Math.floor((remain%3600000)/60000);
+  const s=Math.floor((remain%60000)/1000);
+  document.getElementById("timer").innerText=
+  `⏳ ${h} ساعة ${m} دقيقة ${s} ثانية`;
 }
-
 setInterval(updateTimer,1000);
 updateTimer();
 
-// ====== التقديم ======
+// ===== التقديم =====
 function submitForm(){
-  const name = document.getElementById("name").value.trim();
-  const id = document.getElementById("playerId").value.trim();
-  const rank = document.getElementById("rank").value.trim();
-  const ping = document.getElementById("ping").value.trim();
-
-  if(!name || !id || !rank || !ping){
-    alert("⚠️ من فضلك أكمل جميع البيانات");
+  if(localStorage.getItem("applyStatus")=="closed"){
+    alert("التقديم مقفول");
     return;
   }
 
-  document.getElementById("msg").innerText = "✅ تم التقديم بنجاح";
+  const n=name.value.trim(),
+        p=pid.value.trim(),
+        r=rank.value.trim(),
+        g=ping.value.trim();
+
+  if(!n||!p||!r||!g){
+    alert("أكمل البيانات");
+    return;
+  }
+
+  let list = JSON.parse(localStorage.getItem("players")||"[]");
+  list.push({n,p,r,g});
+  localStorage.setItem("players",JSON.stringify(list));
+
+  msg.innerText="✅ تم التقديم بنجاح";
+  name.value=pid.value=rank.value=ping.value="";
+  updateCount();
+}
+
+// ===== لوحة التحكم =====
+function openAdmin(){
+  const pass=prompt("ادخل كلمة السر");
+  if(pass===PASSWORD){
+    adminPanel.style.display="block";
+    updateCount();
+  }else alert("كلمة السر غلط");
+}
+
+function updateCount(){
+  let list = JSON.parse(localStorage.getItem("players")||"[]");
+  count.innerText=list.length;
+}
+
+function closeApply(){
+  localStorage.setItem("applyStatus","closed");
+  submitBtn.disabled=true;
+  alert("تم قفل التقديم");
+}
+
+function openApply(){
+  localStorage.setItem("applyStatus","open");
+  submitBtn.disabled=false;
+  alert("تم فتح التقديم");
+}
+
+// ===== قفل تلقائي =====
+if(localStorage.getItem("applyStatus")=="closed"){
+  submitBtn.disabled=true;
 }
 </script>
 
