@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMGC PUBG MOBILE</title>
+
+<style>
+*{box-sizing:border-box;font-family:Tahoma}
+body{
+ margin:0;
+ background:#000;
+ color:#fff;
+ overflow:hidden;
+}
+
+/* خلفية سينمائية */
+video{
+ position:fixed;
+ inset:0;
+ width:100%;
+ height:100%;
+ object-fit:cover;
+ filter:brightness(.3);
+ z-index:-2;
+}
+.overlay{
+ position:fixed;
+ inset:0;
+ background:radial-gradient(circle at top,rgba(255,180,0,.15),rgba(0,0,0,.85));
+ z-index:-1;
+}
+
+/* صفحات */
+.page{
+ display:none;
+ padding:22px;
+ animation:cinema 1s ease;
+}
+.active{display:block}
+
+@keyframes cinema{
+ from{opacity:0;transform:translateY(40px) scale(.95)}
+ to{opacity:1;transform:none}
+}
+
+/* عناوين */
+h1,h2{
+ text-align:center;
+ color:#ffcc00;
+ letter-spacing:2px;
+ text-shadow:0 0 20px rgba(255,200,0,.5);
+}
+p{
+ text-align:center;
+ color:#ddd;
+}
+
+/* زرار */
+button{
+ width:100%;
+ padding:16px;
+ margin-top:14px;
+ border:none;
+ border-radius:16px;
+ font-size:18px;
+ font-weight:bold;
+ cursor:pointer;
+}
+.gold{
+ background:linear-gradient(135deg,#ffcc00,#ff8c00);
+ color:#000;
+ box-shadow:0 0 20px rgba(255,200,0,.6);
+}
+.dark{
+ background:#111;
+ color:#ffcc00;
+}
+
+/* كارت */
+.card{
+ background:linear-gradient(160deg,#0c0c0c,#1a1a1a);
+ border-radius:20px;
+ padding:18px;
+ margin-top:18px;
+ box-shadow:0 0 30px rgba(0,0,0,.8);
+}
+
+/* فورم */
+input{
+ width:100%;
+ padding:15px;
+ margin:9px 0;
+ border-radius:14px;
+ border:none;
+ background:#000;
+ color:#ffcc00;
+ font-size:16px;
+ box-shadow:inset 0 0 10px rgba(0,0,0,.8);
+}
+input::placeholder{color:#888}
+
+/* العداد */
+.timer{
+ font-size:28px;
+ font-weight:bold;
+ text-align:center;
+ color:#ff4444;
+ margin:10px 0;
+ text-shadow:0 0 15px rgba(255,60,60,.6);
+}
+
+/* فوتر */
+.footer{
+ margin-top:25px;
+ text-align:center;
+ font-size:13px;
+ color:#aaa;
+}
+</style>
+</head>
+
+<body>
+
+<!-- فيديو -->
+<video autoplay muted loop playsinline>
+ <source src="https://cdn.coverr.co/videos/coverr-soldiers-ready-for-battle-1080p.mp4">
+</video>
+<div class="overlay"></div>
+
+<audio id="sound">
+ <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_5b7b9b1a65.mp3">
+</audio>
+
+<!-- دخول -->
+<div class="page active" id="login">
+ <h1>PMGC</h1>
+ <p>PUBG MOBILE GLOBAL CHAMPIONSHIP</p>
+ <button class="gold" onclick="enter()">دخول البطولة</button>
+</div>
+
+<!-- تقديم -->
+<div class="page" id="apply">
+ <h2>بدأ التقديم</h2>
+ <div class="timer" id="timer">24:00:00</div>
+
+ <div class="card">
+  <input id="name" placeholder="اسم اللاعب">
+  <input id="pid" placeholder="Player ID">
+  <input id="kd" placeholder="K/D Ratio">
+  <input id="fps" placeholder="FPS / Frame Rate">
+  <input id="ping" placeholder="Ping (ms)">
+  <button class="gold" onclick="send()">إرسال التقديم</button>
+  <button class="dark" onclick="go('login')">رجوع</button>
+ </div>
+
+ <div class="footer">
+  تحت رعاية STOR GAMING<br>
+  تواصل: 2001270382949
+ </div>
+</div>
+
+<script>
+function go(id){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+
+function enter(){
+ if(navigator.vibrate) navigator.vibrate([200,100,200]);
+ document.getElementById("sound").play();
+ go('apply');
+}
+
+/* عداد 24 ساعة */
+let end = localStorage.getItem("pmgc_end");
+if(!end){
+ end = Date.now() + 24*60*60*1000;
+ localStorage.setItem("pmgc_end", end);
+}
+
+function timer(){
+ let diff = end - Date.now();
+ let t = document.getElementById("timer");
+
+ if(diff <= 0){
+  t.innerHTML = "انتهى وقت التقديم";
+  document.querySelector(".gold").disabled = true;
+  return;
+ }
+
+ let h = Math.floor(diff/3600000);
+ let m = Math.floor((diff%3600000)/60000);
+ let s = Math.floor((diff%60000)/1000);
+
+ t.innerHTML =
+  String(h).padStart(2,'0')+":"+
+  String(m).padStart(2,'0')+":"+
+  String(s).padStart(2,'0');
+}
+setInterval(timer,1000);
+
+/* إرسال */
+function send(){
+ let n=name.value,p=pid.value,k=kd.value,f=fps.value,g=ping.value;
+ if(!n||!p||!k||!f||!g){
+  alert("من فضلك املأ كل البيانات");
+  return;
+ }
+
+ let msg =
+ "📌 تقديم بطولة PMGC\n\n"+
+ "👤 الاسم: "+n+"\n"+
+ "🆔 ID: "+p+"\n"+
+ "🎯 K/D: "+k+"\n"+
+ "⚡ FPS: "+f+"\n"+
+ "📶 Ping: "+g+"\n\n"+
+ "تم الإرسال من الموقع الرسمي";
+
+ window.open("https://wa.me/2001270382949?text="+encodeURIComponent(msg));
+ alert("تم إرسال التقديم بنجاح");
+}
+</script>
+
+</body>
+</html>
