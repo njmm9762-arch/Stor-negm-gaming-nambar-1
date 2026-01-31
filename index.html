@@ -1,224 +1,157 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PMGC PUBG MOBILE</title>
+<title>التقديم – البطولة</title>
 
 <style>
-*{box-sizing:border-box;font-family:Tahoma}
+*{
+  box-sizing:border-box;
+  font-family: "Cairo", sans-serif;
+}
 body{
- margin:0;
- background:#000;
- color:#fff;
- overflow:hidden;
+  margin:0;
+  min-height:100vh;
+  background:
+    linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.75)),
+    url("https://images.unsplash.com/photo-1604079628040-94301bb21b91");
+  background-size:cover;
+  background-position:center;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-
-/* خلفية سينمائية */
-video{
- position:fixed;
- inset:0;
- width:100%;
- height:100%;
- object-fit:cover;
- filter:brightness(.3);
- z-index:-2;
+.container{
+  width:95%;
+  max-width:420px;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(8px);
+  border-radius:18px;
+  padding:20px;
+  box-shadow:0 0 40px rgba(0,255,255,.15);
 }
-.overlay{
- position:fixed;
- inset:0;
- background:radial-gradient(circle at top,rgba(255,180,0,.15),rgba(0,0,0,.85));
- z-index:-1;
+h1{
+  text-align:center;
+  margin:0 0 10px;
 }
-
-/* صفحات */
-.page{
- display:none;
- padding:22px;
- animation:cinema 1s ease;
-}
-.active{display:block}
-
-@keyframes cinema{
- from{opacity:0;transform:translateY(40px) scale(.95)}
- to{opacity:1;transform:none}
-}
-
-/* عناوين */
-h1,h2{
- text-align:center;
- color:#ffcc00;
- letter-spacing:2px;
- text-shadow:0 0 20px rgba(255,200,0,.5);
-}
-p{
- text-align:center;
- color:#ddd;
-}
-
-/* زرار */
-button{
- width:100%;
- padding:16px;
- margin-top:14px;
- border:none;
- border-radius:16px;
- font-size:18px;
- font-weight:bold;
- cursor:pointer;
-}
-.gold{
- background:linear-gradient(135deg,#ffcc00,#ff8c00);
- color:#000;
- box-shadow:0 0 20px rgba(255,200,0,.6);
-}
-.dark{
- background:#111;
- color:#ffcc00;
-}
-
-/* كارت */
-.card{
- background:linear-gradient(160deg,#0c0c0c,#1a1a1a);
- border-radius:20px;
- padding:18px;
- margin-top:18px;
- box-shadow:0 0 30px rgba(0,0,0,.8);
-}
-
-/* فورم */
-input{
- width:100%;
- padding:15px;
- margin:9px 0;
- border-radius:14px;
- border:none;
- background:#000;
- color:#ffcc00;
- font-size:16px;
- box-shadow:inset 0 0 10px rgba(0,0,0,.8);
-}
-input::placeholder{color:#888}
-
-/* العداد */
 .timer{
- font-size:28px;
- font-weight:bold;
- text-align:center;
- color:#ff4444;
- margin:10px 0;
- text-shadow:0 0 15px rgba(255,60,60,.6);
+  text-align:center;
+  font-size:20px;
+  margin-bottom:15px;
+  color:#00ffff;
 }
-
-/* فوتر */
-.footer{
- margin-top:25px;
- text-align:center;
- font-size:13px;
- color:#aaa;
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:10px;
+  border:none;
+  border-radius:10px;
+  background:#111;
+  color:#fff;
+  font-size:15px;
+}
+input:focus{
+  outline:2px solid #00ffff;
+}
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(45deg,#00ffff,#0077ff);
+  color:#000;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{
+  opacity:.9;
+}
+.success{
+  text-align:center;
+  margin-top:10px;
+  color:#0f0;
+}
+footer{
+  margin-top:15px;
+  text-align:center;
+  font-size:13px;
+  opacity:.8;
 }
 </style>
 </head>
 
 <body>
 
-<!-- فيديو -->
-<video autoplay muted loop playsinline>
- <source src="https://cdn.coverr.co/videos/coverr-soldiers-ready-for-battle-1080p.mp4">
-</video>
-<div class="overlay"></div>
+<div class="container">
+  <h1>التقديم للبطولة</h1>
+  <div class="timer" id="timer">جارٍ التحميل...</div>
 
-<audio id="sound">
- <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_5b7b9b1a65.mp3">
-</audio>
+  <input id="name" placeholder="الاسم الكامل">
+  <input id="playerId" placeholder="ID اللاعب">
+  <input id="rank" placeholder="التير / الرانك">
+  <input id="ping" placeholder="البنج (Ping)">
+  
+  <button onclick="submitForm()">تقديم</button>
 
-<!-- دخول -->
-<div class="page active" id="login">
- <h1>PMGC</h1>
- <p>PUBG MOBILE GLOBAL CHAMPIONSHIP</p>
- <button class="gold" onclick="enter()">دخول البطولة</button>
-</div>
+  <div class="success" id="msg"></div>
 
-<!-- تقديم -->
-<div class="page" id="apply">
- <h2>بدأ التقديم</h2>
- <div class="timer" id="timer">24:00:00</div>
-
- <div class="card">
-  <input id="name" placeholder="اسم اللاعب">
-  <input id="pid" placeholder="Player ID">
-  <input id="kd" placeholder="K/D Ratio">
-  <input id="fps" placeholder="FPS / Frame Rate">
-  <input id="ping" placeholder="Ping (ms)">
-  <button class="gold" onclick="send()">إرسال التقديم</button>
-  <button class="dark" onclick="go('login')">رجوع</button>
- </div>
-
- <div class="footer">
-  تحت رعاية STOR GAMING<br>
-  تواصل: 2001270382949
- </div>
+  <footer>
+    للتواصل: 2001270382949  
+    <br>
+    الرومات 2 – 3 – 4 (قيد التحديث)
+  </footer>
 </div>
 
 <script>
-function go(id){
- document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
- document.getElementById(id).classList.add('active');
+// ====== نظام الوقت الثابت 24 ساعة ======
+const TOTAL_TIME = 24 * 60 * 60 * 1000; // 24 ساعة بالمللي
+
+let startTime = localStorage.getItem("startTime");
+
+if(!startTime){
+  startTime = Date.now();
+  localStorage.setItem("startTime", startTime);
+}else{
+  startTime = parseInt(startTime);
 }
 
-function enter(){
- if(navigator.vibrate) navigator.vibrate([200,100,200]);
- document.getElementById("sound").play();
- go('apply');
+function updateTimer(){
+  const now = Date.now();
+  const elapsed = now - startTime;
+  const remaining = TOTAL_TIME - elapsed;
+
+  if(remaining <= 0){
+    document.getElementById("timer").innerText = "❌ انتهى وقت التقديم";
+    return;
+  }
+
+  const h = Math.floor(remaining / (1000*60*60));
+  const m = Math.floor((remaining % (1000*60*60)) / (1000*60));
+  const s = Math.floor((remaining % (1000*60)) / 1000);
+
+  document.getElementById("timer").innerText =
+    `⏳ الوقت المتبقي: ${h} ساعة ${m} دقيقة ${s} ثانية`;
 }
 
-/* عداد 24 ساعة */
-let end = localStorage.getItem("pmgc_end");
-if(!end){
- end = Date.now() + 24*60*60*1000;
- localStorage.setItem("pmgc_end", end);
-}
+setInterval(updateTimer,1000);
+updateTimer();
 
-function timer(){
- let diff = end - Date.now();
- let t = document.getElementById("timer");
+// ====== التقديم ======
+function submitForm(){
+  const name = document.getElementById("name").value.trim();
+  const id = document.getElementById("playerId").value.trim();
+  const rank = document.getElementById("rank").value.trim();
+  const ping = document.getElementById("ping").value.trim();
 
- if(diff <= 0){
-  t.innerHTML = "انتهى وقت التقديم";
-  document.querySelector(".gold").disabled = true;
-  return;
- }
+  if(!name || !id || !rank || !ping){
+    alert("⚠️ من فضلك أكمل جميع البيانات");
+    return;
+  }
 
- let h = Math.floor(diff/3600000);
- let m = Math.floor((diff%3600000)/60000);
- let s = Math.floor((diff%60000)/1000);
-
- t.innerHTML =
-  String(h).padStart(2,'0')+":"+
-  String(m).padStart(2,'0')+":"+
-  String(s).padStart(2,'0');
-}
-setInterval(timer,1000);
-
-/* إرسال */
-function send(){
- let n=name.value,p=pid.value,k=kd.value,f=fps.value,g=ping.value;
- if(!n||!p||!k||!f||!g){
-  alert("من فضلك املأ كل البيانات");
-  return;
- }
-
- let msg =
- "📌 تقديم بطولة PMGC\n\n"+
- "👤 الاسم: "+n+"\n"+
- "🆔 ID: "+p+"\n"+
- "🎯 K/D: "+k+"\n"+
- "⚡ FPS: "+f+"\n"+
- "📶 Ping: "+g+"\n\n"+
- "تم الإرسال من الموقع الرسمي";
-
- window.open("https://wa.me/2001270382949?text="+encodeURIComponent(msg));
- alert("تم إرسال التقديم بنجاح");
+  document.getElementById("msg").innerText = "✅ تم التقديم بنجاح";
 }
 </script>
 
