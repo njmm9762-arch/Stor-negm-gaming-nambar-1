@@ -3,169 +3,183 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PMGC – التقديم</title>
+<title>PMGC Official</title>
 
 <style>
-*{box-sizing:border-box;font-family:Cairo,sans-serif}
+*{box-sizing:border-box;font-family:"Cairo",sans-serif}
 body{
-margin:0;min-height:100vh;
-background:linear-gradient(rgba(0,0,0,.8),rgba(0,0,0,.8)),
-url("https://images.unsplash.com/photo-1604079628040-94301bb21b91");
-background-size:cover;
-color:#fff;display:flex;justify-content:center;align-items:center
+margin:0;min-height:100vh;color:#fff;overflow:hidden;
+}
+video.bg{
+position:fixed;top:0;left:0;width:100%;height:100%;
+object-fit:cover;z-index:-2
+}
+.overlay{
+position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,.85);z-index:-1
 }
 .container{
-width:95%;max-width:420px;
-background:rgba(0,0,0,.65);
+width:95%;max-width:420px;margin:auto;
+background:rgba(10,10,10,.75);
 backdrop-filter:blur(10px);
-padding:20px;border-radius:20px;
-box-shadow:0 0 50px rgba(0,255,255,.2)
+border-radius:20px;padding:20px;
+border:1px solid rgba(0,255,255,.25);
+box-shadow:0 0 30px rgba(0,255,255,.35);
+animation:cinema 1.2s ease
 }
-h1{text-align:center;margin-bottom:10px}
-.timer{text-align:center;color:#00ffff;margin-bottom:15px;font-size:18px}
+@keyframes cinema{
+from{transform:scale(.9);opacity:0}
+to{transform:scale(1);opacity:1}
+}
+h1{text-align:center;color:#00ffff;text-shadow:0 0 10px}
+.timer{text-align:center;margin-bottom:10px;color:#00ffff}
+
 input,button{
-width:100%;padding:12px;margin-bottom:10px;
-border:none;border-radius:12px;font-size:15px
+width:100%;padding:13px;margin-bottom:10px;
+border-radius:12px;border:none;font-size:15px
 }
-input{background:#111;color:#fff}
+input{
+background:#0b0b0b;color:#fff;
+border:1px solid rgba(0,255,255,.3)
+}
+input:focus{outline:none;box-shadow:0 0 10px #00ffff}
+
 button{
-background:linear-gradient(45deg,#00ffff,#0077ff);
-color:#000;font-weight:bold;cursor:pointer
+background:linear-gradient(135deg,#00ffff,#008b8b);
+color:#000;font-weight:bold;
+box-shadow:0 0 15px rgba(0,255,255,.6);
+cursor:pointer
 }
-button:disabled{background:#555;color:#999}
-.success{color:#0f0;text-align:center}
-.admin-btn{
-background:#ffb300;color:#000;margin-top:10px
-}
+button:disabled{background:#333;color:#777}
+
+.admin{background:linear-gradient(135deg,#ff9800,#ff6a00)}
+.share{background:linear-gradient(135deg,#25D366,#128C7E)}
+
 .panel{
-display:none;background:#111;padding:15px;border-radius:15px;margin-top:15px
+display:none;background:#0a0a0a;padding:15px;
+border-radius:15px;border:1px solid rgba(0,255,255,.3)
 }
-.panel h3{text-align:center}
-.footer{text-align:center;font-size:13px;opacity:.8}
+
+.player{
+display:flex;justify-content:space-between;
+padding:10px;border-bottom:1px solid rgba(255,255,255,.1)
+}
+.first{
+color:#ffd700;
+text-shadow:0 0 10px gold;
+font-weight:bold
+}
+
+.footer{text-align:center;font-size:13px;opacity:.8;margin-top:10px}
 </style>
 </head>
 
 <body>
 
-<div class="container">
-<h1>التقديم لبطولة PMGC</h1>
+<video class="bg" autoplay muted loop>
+<source src="https://cdn.coverr.co/videos/coverr-soldier-walking-in-smoke-1576/1080p.mp4">
+</video>
+<div class="overlay"></div>
+
+<audio id="enter" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+
+<div class="container" id="app">
+<h1>PMGC – التقديم</h1>
 <div class="timer" id="timer"></div>
 
-<input id="name" placeholder="الاسم الكامل">
+<div id="form">
+<input id="name" placeholder="الاسم">
 <input id="pid" placeholder="ID اللاعب">
-<input id="rank" placeholder="التير / الرانك">
+<input id="rank" placeholder="الرانك">
 <input id="ping" placeholder="البنج">
+<button onclick="submit()">تقديم</button>
+</div>
 
-<button id="submitBtn" onclick="submitForm()">تقديم</button>
-<div class="success" id="msg"></div>
-
-<button class="admin-btn" onclick="openAdmin()">لوحة التحكم</button>
+<button class="admin" onclick="admin()">لوحة التحكم</button>
+<button class="share" onclick="showResults()">عرض النتائج</button>
 
 <div class="panel" id="adminPanel">
-<h3>لوحة التحكم</h3>
 <p>عدد المتقدمين: <span id="count">0</span></p>
 <button onclick="closeApply()">قفل التقديم</button>
 <button onclick="openApply()">فتح التقديم</button>
 </div>
 
+<div class="panel" id="results"></div>
+
 <div class="footer">
 📞 2001270382949<br>
-الرومات 2 – 3 – 4 (جارٍ التحديث)
+روم 1 شغال – 2 / 3 / 4 جاري التحديث
 </div>
 </div>
 
 <script>
-// ===== الإعدادات =====
-const PASSWORD = "PMGC2026";
-const TOTAL_TIME = 24*60*60*1000;
-
-// ===== الوقت =====
-let startTime = localStorage.getItem("startTime");
-if(!startTime){
-  startTime = Date.now();
-  localStorage.setItem("startTime",startTime);
-}else startTime = parseInt(startTime);
-
-// ===== حالة التقديم =====
-if(localStorage.getItem("applyStatus")==null){
-  localStorage.setItem("applyStatus","open");
+window.onload=()=>{
+enter.play();
+if(navigator.vibrate) navigator.vibrate(200);
 }
 
-function updateTimer(){
-  const now = Date.now();
-  const remain = TOTAL_TIME - (now-startTime);
+const PASSWORD="PMGC2026";
+const TOTAL=24*60*60*1000;
 
-  if(remain<=0){
-    document.getElementById("timer").innerText="❌ انتهى وقت التقديم";
-    localStorage.setItem("applyStatus","closed");
-    document.getElementById("submitBtn").disabled=true;
-    return;
-  }
+/* الوقت */
+let start=localStorage.getItem("startTime");
+if(!start){start=Date.now();localStorage.setItem("startTime",start);}
+start=parseInt(start);
 
-  const h=Math.floor(remain/3600000);
-  const m=Math.floor((remain%3600000)/60000);
-  const s=Math.floor((remain%60000)/1000);
-  document.getElementById("timer").innerText=
-  `⏳ ${h} ساعة ${m} دقيقة ${s} ثانية`;
+if(!localStorage.getItem("status"))
+localStorage.setItem("status","open");
+
+function timer(){
+const r=TOTAL-(Date.now()-start);
+if(r<=0){
+timerEl.innerText="❌ انتهى التقديم";
+localStorage.setItem("status","closed");
+return;
 }
-setInterval(updateTimer,1000);
-updateTimer();
+timerEl.innerText=
+`⏳ ${Math.floor(r/3600000)}س ${Math.floor(r%3600000/60000)}د ${Math.floor(r%60000/1000)}ث`;
+}
+const timerEl=document.getElementById("timer");
+setInterval(timer,1000);timer();
 
-// ===== التقديم =====
-function submitForm(){
-  if(localStorage.getItem("applyStatus")=="closed"){
-    alert("التقديم مقفول");
-    return;
-  }
-
-  const n=name.value.trim(),
-        p=pid.value.trim(),
-        r=rank.value.trim(),
-        g=ping.value.trim();
-
-  if(!n||!p||!r||!g){
-    alert("أكمل البيانات");
-    return;
-  }
-
-  let list = JSON.parse(localStorage.getItem("players")||"[]");
-  list.push({n,p,r,g});
-  localStorage.setItem("players",JSON.stringify(list));
-
-  msg.innerText="✅ تم التقديم بنجاح";
-  name.value=pid.value=rank.value=ping.value="";
-  updateCount();
+function submit(){
+if(localStorage.getItem("status")=="closed"){alert("مقفول");return;}
+if(!name.value||!pid.value||!rank.value||!ping.value){alert("أكمل البيانات");return;}
+let p=JSON.parse(localStorage.getItem("players")||"[]");
+p.push({name:name.value,points:Math.floor(Math.random()*10+1)});
+localStorage.setItem("players",JSON.stringify(p));
+name.value=pid.value=rank.value=ping.value="";
+alert("تم التقديم");
 }
 
-// ===== لوحة التحكم =====
-function openAdmin(){
-  const pass=prompt("ادخل كلمة السر");
-  if(pass===PASSWORD){
-    adminPanel.style.display="block";
-    updateCount();
-  }else alert("كلمة السر غلط");
+function admin(){
+const p=prompt("كلمة السر");
+if(p===PASSWORD){
+adminPanel.style.display="block";
+count.innerText=JSON.parse(localStorage.getItem("players")||"[]").length;
+}else alert("خطأ");
 }
 
-function updateCount(){
-  let list = JSON.parse(localStorage.getItem("players")||"[]");
-  count.innerText=list.length;
-}
+function closeApply(){localStorage.setItem("status","closed");}
+function openApply(){localStorage.setItem("status","open");}
 
-function closeApply(){
-  localStorage.setItem("applyStatus","closed");
-  submitBtn.disabled=true;
-  alert("تم قفل التقديم");
+function showResults(){
+results.style.display="block";
+let p=JSON.parse(localStorage.getItem("players")||"[]");
+p.sort((a,b)=>b.points-a.points);
+results.innerHTML="<h3>النتائج</h3>";
+p.forEach((x,i)=>{
+results.innerHTML+=
+`<div class="player ${i==0?"first":""}">
+${i==0?"👑 ":""}${x.name}
+<span>${x.points} بوينت</span>
+</div>`;
+if(i==0){
+speechSynthesis.speak(new SpeechSynthesisUtterance(
+`المركز الأول ${x.name} بعدد ${x.points} بوينت`
+));
 }
-
-function openApply(){
-  localStorage.setItem("applyStatus","open");
-  submitBtn.disabled=false;
-  alert("تم فتح التقديم");
-}
-
-// ===== قفل تلقائي =====
-if(localStorage.getItem("applyStatus")=="closed"){
-  submitBtn.disabled=true;
+});
 }
 </script>
 
